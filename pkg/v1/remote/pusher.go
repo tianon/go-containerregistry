@@ -386,13 +386,24 @@ func (rw *repoWriter) writeChild(ctx context.Context, child partial.Describable,
 	return nil
 }
 
+func (rw *repoWriter) fetcher(ctx context.Context, ref name.Reference) (*fetcher, error) {
+	if rw.o.mirror == "" {
+		return &fetcher{
+			target: ref.Context(),
+			client: rw.w.client,
+		}, nil
+	}
+
+	return makeFetcher(ctx, ref.Context(), rw.o)
+}
+
 // TODO: Consider caching some representation of the tags/digests in the destination
 // repository as a hint to avoid this optimistic check in cases where we will most
 // likely have to do a PUT anyway, e.g. if we are overwriting a tag we just wrote.
 func (rw *repoWriter) manifestExists(ctx context.Context, ref name.Reference, t Taggable) (bool, error) {
-	f := &fetcher{
-		target: ref.Context(),
-		client: rw.w.client,
+	f, err := rw.fetcher(ctx, ref)
+	if err != nil {
+		return false, err
 	}
 
 	m, err := taggableToManifest(t)

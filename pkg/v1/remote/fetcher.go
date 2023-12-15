@@ -21,6 +21,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"path"
 	"strings"
 
 	"github.com/google/go-containerregistry/internal/redact"
@@ -61,6 +62,23 @@ func makeFetcher(ctx context.Context, target resource, o *options) (*fetcher, er
 			return nil, fmt.Errorf("unexpected resource: %T", target)
 		}
 		reg = repo.Registry
+	}
+
+	if o.mirror != "" {
+		mirror, err := name.NewRegistry(o.mirror)
+		if err != nil {
+			return nil, fmt.Errorf("parsing mirror: %w", err)
+		}
+		reg = mirror
+
+		if _, ok := target.(name.Registry); ok {
+			target = mirror
+		} else if repo, ok := target.(name.Repository); ok {
+			target, err = name.NewRepository(path.Join(mirror.RegistryStr(), repo.RepositoryStr()))
+			if err != nil {
+				return nil, fmt.Errorf("parsing mirror target: %w", err)
+			}
+		}
 	}
 
 	tr, err := transport.NewWithContext(ctx, reg, auth, o.transport, []string{target.Scope(transport.PullScope)})

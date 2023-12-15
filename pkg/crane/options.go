@@ -176,3 +176,9 @@ func WithNoClobber(noclobber bool) Option {
 		o.noclobber = noclobber
 	}
 }
+
+func WithMirrorForTianon(mirror string) Option {
+	return func(o *Options) {
+		o.Remote = append(o.Remote, remote.WithMirrorForTianon(mirror))
+	}
+}

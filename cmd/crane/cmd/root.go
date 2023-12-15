@@ -43,6 +43,7 @@ var Root = New(use, short, []crane.Option{})
 // New returns a top-level command for crane. This is mostly exposed
 // to share code with gcrane.
 func New(use, short string, options []crane.Option) *cobra.Command {
+	mirror := ""
 	verbose := false
 	insecure := false
 	ndlayers := false
@@ -67,6 +68,9 @@ func New(use, short string, options []crane.Option) *cobra.Command {
 			}
 			if ndlayers {
 				options = append(options, crane.WithNondistributable())
+			}
+			if mirror != "" {
+				options = append(options, crane.WithMirrorForTianon(mirror))
 			}
 			if Version != "" {
 				binary := "crane"
@@ -136,6 +140,7 @@ func New(use, short string, options []crane.Option) *cobra.Command {
 	root.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Enable debug logs")
 	root.PersistentFlags().BoolVar(&insecure, "insecure", false, "Allow image references to be fetched without TLS")
 	root.PersistentFlags().BoolVar(&ndlayers, "allow-nondistributable-artifacts", false, "Allow pushing non-distributable (foreign) layers")
+	root.PersistentFlags().StringVar(&mirror, "mirror", "", "Use as read-only mirror (for tianon)")
 	root.PersistentFlags().Var(platform, "platform", "Specifies the platform in the form os/arch[/variant][:osversion] (e.g. linux/amd64).")
 
 	return root

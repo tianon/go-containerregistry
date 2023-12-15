@@ -46,6 +46,8 @@ type options struct {
 	retryPredicate                 retry.Predicate
 	retryStatusCodes               []int
 
+	mirror string
+
 	// Only these options can overwrite Reuse()d options.
 	platform v1.Platform
 	pageSize int
@@ -344,6 +346,13 @@ func Reuse[I *Puller | *Pusher](i I) Option {
 		} else if pusher, ok := any(i).(*Pusher); ok {
 			o.pusher = pusher
 		}
+		return nil
+	}
+}
+
+func WithMirrorForTianon(base string) Option {
+	return func(o *options) error {
+		o.mirror = base
 		return nil
 	}
 }
