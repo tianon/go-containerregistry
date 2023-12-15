@@ -180,6 +180,9 @@ type repoWriter struct {
 	err error
 
 	work *workers
+
+	sync.Mutex
+	mirrorFetcher *fetcher
 }
 
 // this will run once per repoWriter instance
@@ -394,7 +397,19 @@ func (rw *repoWriter) fetcher(ctx context.Context, ref name.Reference) (*fetcher
 		}, nil
 	}
 
-	return makeFetcher(ctx, ref.Context(), rw.o)
+	rw.Lock()
+	defer rw.Unlock()
+
+	if rw.mirrorFetcher == nil {
+		f, err := makeFetcher(ctx, ref.Context(), rw.o)
+		if err != nil {
+			return nil, err
+		}
+
+		rw.mirrorFetcher = f
+	}
+
+	return rw.mirrorFetcher, nil
 }
 
 // TODO: Consider caching some representation of the tags/digests in the destination
