@@ -72,6 +72,7 @@ func (f *fetcher) fetchReferrers(ctx context.Context, filter map[string]string, 
 			return nil, err
 		}
 	} else {
+		return nil, errors.New("referrers unsupported and fallback disabled -Tianon") // https://github.com/google/go-containerregistry/pull/1748
 		// The registry doesn't support the Referrers API endpoint, so we'll use the fallback tag scheme.
 		b, _, err = f.fetchManifest(ctx, fallbackTag(d), []types.MediaType{types.OCIImageIndex})
 		var terr *transport.Error

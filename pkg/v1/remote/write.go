@@ -492,6 +492,7 @@ func (w *writer) commitSubjectReferrers(ctx context.Context, sub name.Digest, ad
 		// The registry supports Referrers API. The registry is responsible for updating the referrers list.
 		return nil
 	}
+	return fmt.Errorf("referrers unsupported and fallback disabled -Tianon") // https://github.com/google/go-containerregistry/pull/1748
 
 	// The registry doesn't support Referrers API, we need to update the manifest tagged with the fallback tag.
 	// Make the request to GET the current manifest.
@@ -600,7 +601,7 @@ func (w *writer) commitManifest(ctx context.Context, t Taggable, ref name.Refere
 
 		// If the manifest referred to a subject, we may need to update the fallback tag manifest.
 		// TODO: If this fails, we'll retry the whole upload. We should retry just this part.
-		if mf.Subject != nil {
+		if mf.Subject != nil && false { // fmt.Errorf("referrers unsupported and fallback disabled -Tianon") // https://github.com/google/go-containerregistry/pull/1748
 			h, size, err := v1.SHA256(bytes.NewReader(raw))
 			if err != nil {
 				return err
